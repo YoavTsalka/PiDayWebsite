@@ -124,11 +124,9 @@ def submit():
     file = request.files.get('file')
 
     filename = ""
-    filepath = ""
     if file and file.filename != '':
         filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
@@ -136,38 +134,8 @@ def submit():
               (name, content, filename))
     conn.commit()
     conn.close()
-
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = SENDER_EMAIL
-        msg['To'] = ADMIN_EMAIL
-        msg['Subject'] = f"🔔 יום הפאי: יצירה חדשה ממתינה לאישור (מאת: {name})"
-
-        body = f"""
-היי מנהל האתר!
-התקבלה יצירה חדשה באתר יום הפאי, והיא ממתינה לאישורך.
-שם השולח: {name}
-תוכן היצירה:
-{content}
-        """
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
-
-        if filename and os.path.exists(filepath):
-            with open(filepath, 'rb') as f:
-                img_data = f.read()
-            image = MIMEImage(img_data, name=filename)
-            msg.attach(image)
-
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(SENDER_EMAIL, SENDER_PASSWORD.replace(" ", ""))
-        server.send_message(msg)
-        server.quit()
-    except Exception as e:
-        print(f"Error sending email: {e}")
-
+    
     return jsonify({"status": "success"})
-
 
 @app.route('/save_item/<item_type>', methods=['POST'])
 def save_item(item_type):
@@ -323,6 +291,7 @@ def check_updates():
 if __name__ == '__main__':
     init_db()
     app.run()
+
 
 
 
