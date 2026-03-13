@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>פאנל ניהול - יום הפאי</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background-color: #f0f4f8; margin: 0; padding: 30px; }
+        header { background-color: #314159; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; border-right: 4px solid #f39c12; }
+        .btn-approve { background-color: #2ecc71; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; display: inline-block; font-weight: bold; margin-top: 10px; }
+        .btn-approve:hover { background-color: #27ae60; }
+        .btn-reject { background-color: #e74c3c; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; display: inline-block; font-weight: bold; margin-right: 10px; margin-top: 10px; }
+        .btn-reject:hover { background-color: #c0392b; }
+        .btn-home { background-color: #f39c12; color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; }
+        .attached-image { max-width: 300px; border-radius: 8px; margin-top: 15px; display: block; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 style="margin:0;">ניהול יצירות גולשים</h1>
+        <a href="/" class="btn-home">חזרה לאתר הראשי (למצב עריכה)</a>
+    </header>
+
+    <h2>יצירות שממתינות לאישור שלך:</h2>
+
+    {% if pending %}
+        {% for sub in pending %}
+            <div class="card">
+                <strong style="font-size: 1.2em;">מאת: {{ sub[1] }}</strong>
+
+                <p style="font-size: 1.1em; background: #f8fafc; padding: 15px; border-radius: 6px;">{{ sub[2] }}</p>
+
+                {% if sub[3] %}
+                <strong style="color: #2980b9;">תמונה מצורפת:</strong>
+                <img src="/static/uploads/{{ sub[3] }}" class="attached-image" alt="תמונה מצורפת">
+                {% endif %}
+
+                <div>
+                    <a href="/approve/{{ sub[0] }}" class="btn-approve">אשר ופרסם באתר ✔️</a>
+                    <a href="/reject/{{ sub[0] }}" class="btn-reject" onclick="return confirm('האם אתה בטוח שברצונך לסרב ולמחוק יצירה זו לצמיתות?');">סרב ומחק ❌</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p style="font-size: 1.2em; color: #7f8c8d;">אין כרגע יצירות חדשות הממתינות לאישור.</p>
+    {% endif %}
+
+</body>
+</html>
