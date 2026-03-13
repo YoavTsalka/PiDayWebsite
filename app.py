@@ -1,6 +1,3 @@
-"""
-Pi Day Website Backend App
-"""
 from flask import Flask, render_template, request, session, redirect, jsonify
 import sqlite3
 import re
@@ -13,21 +10,22 @@ import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__, static_folder='static')
+app.secret_key = 'pi_day_secret_2026'
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'piday.db')
-app.secret_key = 'pi_day_secret_2026'
+PI_PATH = os.path.join(BASE_DIR, 'static', 'pi.txt')
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 SENDER_EMAIL = "your_dedicated_email@gmail.com"
 SENDER_PASSWORD = "abcd efgh ijkl mnop"
 ADMIN_EMAIL = "your_personal_email@gmail.com"
 
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-
 def init_db():
-    conn = sqlite3.connect('piday.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute(
         'CREATE TABLE IF NOT EXISTS submissions (id INTEGER PRIMARY KEY, name TEXT, content TEXT, image_filename TEXT, approved INTEGER)')
@@ -97,7 +95,7 @@ def init_db():
 
 @app.route('/')
 def home():
-    conn = sqlite3.connect('piday.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('SELECT id, name, content, image_filename FROM submissions WHERE approved=1')
     approved_submissions = c.fetchall()
@@ -131,7 +129,7 @@ def submit():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-    conn = sqlite3.connect('piday.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('INSERT INTO submissions (name, content, image_filename, approved) VALUES (?, ?, ?, 0)',
               (name, content, filename))
@@ -146,19 +144,10 @@ def submit():
 
         body = f"""
 היי מנהל האתר!
-
 התקבלה יצירה חדשה באתר יום הפאי, והיא ממתינה לאישורך.
-
 שם השולח: {name}
-האם צורפה תמונה: {'כן (מצורפת למייל)' if filename else 'לא'}
-
 תוכן היצירה:
---------------------------------
 {content}
---------------------------------
-
-כדי לאשר את היצירה ולפרסם אותה באתר, היכנס לפאנל הניהול שלך:
-http://127.0.0.1:5000/pi_admin
         """
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
@@ -184,7 +173,7 @@ def save_item(item_type):
     if not session.get('admin_logged_in'): return jsonify({"status": "error", "message": "Unauthorized"}), 401
     data = request.get_json()
     item_id = data.get('id')
-    conn = sqlite3.connect('piday.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     if item_type in ['fact', 'method']:
         table = 'facts' if item_type == 'fact' else 'methods'
@@ -229,7 +218,7 @@ def delete_item(item_type, item_id):
     table_map = {'fact': 'facts', 'video': 'videos', 'recipe': 'recipes', 'submission': 'submissions', 'song': 'songs',
                  'method': 'methods'}
     if item_type not in table_map: return jsonify({"status": "error"}), 400
-    conn = sqlite3.connect('piday.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
     if item_type == 'submission':
@@ -252,7 +241,7 @@ def search_pi():
     query = data.get('query', '')
     if not query.isdigit(): return jsonify({"status": "error", "message": "Invalid input"})
     try:
-        with open('static/pi.txt', 'rb') as f:
+        with open(PI_PATH, 'rb') as f:
             mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
             pos = mm.find(query.encode('ascii'))
             mm.close()
@@ -278,7 +267,7 @@ def pi_admin():
 @app.route('/dashboard')
 def dashboard():
     if not session.get('admin_logged_in'): return redirect('/pi_admin')
-    conn = sqlite3.connect('piday.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('SELECT id, name, content, image_filename FROM submissions WHERE approved=0')
     pending = c.fetchall()
@@ -289,7 +278,7 @@ def dashboard():
 @app.route('/approve/<int:sub_id>')
 def approve(sub_id):
     if not session.get('admin_logged_in'): return redirect('/pi_admin')
-    conn = sqlite3.connect('piday.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('UPDATE submissions SET approved=1 WHERE id=?', (sub_id,))
     conn.commit()
@@ -300,7 +289,7 @@ def approve(sub_id):
 @app.route('/reject/<int:sub_id>')
 def reject(sub_id):
     if not session.get('admin_logged_in'): return redirect('/pi_admin')
-    conn = sqlite3.connect('piday.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
     c.execute('SELECT image_filename FROM submissions WHERE id=?', (sub_id,))
@@ -323,8 +312,7 @@ def logout():
 
 @app.route('/api/check_updates')
 def check_updates():
-    # פונקציה שמחזירה את כמות היצירות המאושרות באתר
-    conn = sqlite3.connect('piday.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('SELECT COUNT(*) FROM submissions WHERE approved=1')
     count = c.fetchone()[0]
@@ -333,5 +321,4 @@ def check_updates():
 
 if __name__ == '__main__':
     init_db()
-
-    app.run(debug=True)
+    app.run()
