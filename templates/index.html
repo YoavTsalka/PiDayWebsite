@@ -581,7 +581,7 @@
 let buffer = "";
 document.addEventListener('keydown', (e) => {
     buffer += e.key;
-    if (buffer.includes("3.14")) { window.location.href = "/pi_admin"; }
+    if (buffer.includes("3.14")) { startPiRain(); }
     if (buffer.length > 10) buffer = buffer.substring(1);
 });
 </script>
@@ -627,5 +627,6 @@ document.addEventListener('keydown', (e) => {
 </body>
 
 </html>
+
 
 
