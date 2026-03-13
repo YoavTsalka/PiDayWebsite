@@ -55,6 +55,20 @@
         .recipe-ingredients { background-color: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
         .recipe-steps { padding-right: 20px; }
     </style>
+    <style>
+.pi-rain {
+    position: fixed;
+    top: -50px;
+    font-size: 24px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 9999;
+    animation: fall linear forwards;
+}
+@keyframes fall {
+    to { transform: translateY(110vh) rotate(360deg); }
+}
+</style>
 </head>
 <body>
 
@@ -571,6 +585,39 @@ document.addEventListener('keydown', (e) => {
     if (buffer.length > 10) buffer = buffer.substring(1);
 });
 </script>
+    <script>
+let buffer = "";
+const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FFF333', '#33FFF3'];
+
+document.addEventListener('keydown', (e) => {
+    buffer += e.key;
+    // ברגע שמקלידים 3.14
+    if (buffer.includes("3.14")) {
+        startPiRain();
+        buffer = ""; // איפוס
+    }
+    if (buffer.length > 10) buffer = buffer.substring(1);
+});
+
+function startPiRain() {
+    for (let i = 0; i < 60; i++) {
+        setTimeout(() => {
+            const pi = document.createElement('div');
+            pi.innerHTML = 'π';
+            pi.className = 'pi-rain';
+            pi.style.left = Math.random() * 100 + 'vw';
+            pi.style.color = colors[Math.floor(Math.random() * colors.length)];
+            pi.style.animationDuration = (Math.random() * 2 + 3) + 's';
+            pi.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            document.body.appendChild(pi);
+            
+            // מחיקה אחרי הנפילה
+            setTimeout(() => pi.remove(), 5000);
+        }, i * 150);
+    }
+}
+</script>
 </body>
 
 </html>
+
