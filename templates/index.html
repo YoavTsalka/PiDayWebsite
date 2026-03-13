@@ -589,17 +589,9 @@ document.addEventListener('keydown', (e) => {
 let buffer = "";
 const colors = ['#FF5733', '#33FF57', '#3357FF', '#F333FF', '#FFF333', '#33FFF3'];
 
-document.addEventListener('keydown', (e) => {
-    buffer += e.key;
-    // ברגע שמקלידים 3.14
-    if (buffer.includes("3.14")) {
-        startPiRain();
-        buffer = ""; // איפוס
-    }
-    if (buffer.length > 10) buffer = buffer.substring(1);
-});
-
+// פונקציית הגשם
 function startPiRain() {
+    console.log("Pi Rain Started!"); // לבדיקה בקונסול
     for (let i = 0; i < 60; i++) {
         setTimeout(() => {
             const pi = document.createElement('div');
@@ -610,14 +602,30 @@ function startPiRain() {
             pi.style.animationDuration = (Math.random() * 2 + 3) + 's';
             pi.style.fontSize = (Math.random() * 20 + 20) + 'px';
             document.body.appendChild(pi);
-            
-            // מחיקה אחרי הנפילה
             setTimeout(() => pi.remove(), 5000);
         }, i * 150);
     }
 }
+
+// זיהוי הקלדה משופר
+document.addEventListener('keydown', (e) => {
+    // אנחנו שומרים רק מספרים ונקודות
+    if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
+        buffer += e.key;
+        
+        // בדיקה אם הרצף מופיע בבאפר
+        if (buffer.endsWith("3.14")) {
+            startPiRain();
+            buffer = ""; // איפוס
+        }
+        
+        // הגבלה של אורך הבאפר
+        if (buffer.length > 10) buffer = buffer.substring(1);
+    }
+});
 </script>
 </body>
 
 </html>
+
 
