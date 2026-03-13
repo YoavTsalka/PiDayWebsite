@@ -13,6 +13,8 @@ import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__, static_folder='static')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'piday.db')
 app.secret_key = 'pi_day_secret_2026'
 
 SENDER_EMAIL = "your_dedicated_email@gmail.com"
@@ -331,4 +333,5 @@ def check_updates():
 
 if __name__ == '__main__':
     init_db()
+
     app.run(debug=True)
