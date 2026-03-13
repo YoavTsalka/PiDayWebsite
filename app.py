@@ -205,6 +205,37 @@ def delete_item(item_type, item_id):
     conn.close()
     return jsonify({"status": "success"})
 
+@app.route('/edit_item/<item_type>/<int:item_id>', methods=['POST'])
+def edit_item(item_type, item_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+    
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    # עריכת עובדות או שיטות (כותרת ותוכן)
+    if item_type in ['fact', 'method']:
+        title = request.form.get('title')
+        content = request.form.get('content')
+        table = 'facts' if item_type == 'fact' else 'methods'
+        c.execute(f'UPDATE {table} SET title=?, content=? WHERE id=?', (title, content, item_id))
+        
+    # עריכת מתכונים (כותרת, מצרכים ושלבים)
+    elif item_type == 'recipe':
+        title = request.form.get('title')
+        ingredients = request.form.get('ingredients')
+        steps = request.form.get('steps')
+        c.execute('UPDATE recipes SET title=?, ingredients=?, steps=? WHERE id=?', (title, ingredients, steps, item_id))
+
+    # עריכת יצירות של אנשים (שם ותוכן)
+    elif item_type == 'submission':
+        name = request.form.get('name')
+        content = request.form.get('content')
+        c.execute('UPDATE submissions SET name=?, content=? WHERE id=?', (name, content, item_id))
+
+    conn.commit()
+    conn.close()
+    return redirect('/dashboard')
 
 @app.route('/search_pi', methods=['POST'])
 def search_pi():
@@ -293,6 +324,7 @@ def check_updates():
 if __name__ == '__main__':
     init_db()
     app.run()
+
 
 
 
