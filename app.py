@@ -95,6 +95,7 @@ def init_db():
 
 @app.route('/')
 def home():
+    init_db()
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('SELECT id, name, content, image_filename FROM submissions WHERE approved=1')
@@ -322,4 +323,5 @@ def check_updates():
 if __name__ == '__main__':
     init_db()
     app.run()
+
 
