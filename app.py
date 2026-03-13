@@ -135,8 +135,10 @@ def submit():
     conn.commit()
     conn.close()
     
-    return jsonify({"status": "success"})
-
+    # במקום jsonify, אנחנו מחזירים את המשתמש לדף הבית
+    # זה יסגור את המודאל אוטומטית כי הדף נטען מחדש
+    return redirect('/')
+    
 @app.route('/save_item/<item_type>', methods=['POST'])
 def save_item(item_type):
     if not session.get('admin_logged_in'): return jsonify({"status": "error", "message": "Unauthorized"}), 401
@@ -291,6 +293,7 @@ def check_updates():
 if __name__ == '__main__':
     init_db()
     app.run()
+
 
 
 
